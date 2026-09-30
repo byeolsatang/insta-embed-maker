@@ -4,6 +4,25 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="InstagramのリールやポストのURLから、スマホでも埋め込みコードを作ってコピーできるツール">
+<meta name="theme-color" content="#c2366e">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="64x64" href="icons/favicon-64.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="インスタ埋め込み">
+<meta property="og:type" content="website">
+<meta property="og:title" content="インスタ埋め込みメーカー">
+<meta property="og:description" content="URLを貼るだけで、スマホからInstagramの埋め込みコードを作ってコピー。シェア用パラメータも自動で除去します。">
+<meta property="og:url" content="https://byeolsatang.github.io/insta-embed-maker/">
+<meta property="og:image" content="https://byeolsatang.github.io/insta-embed-maker/ogp.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="インスタ埋め込みメーカー">
+<meta name="twitter:description" content="URLを貼るだけで、スマホからInstagramの埋め込みコードを作ってコピー。">
+<meta name="twitter:image" content="https://byeolsatang.github.io/insta-embed-maker/ogp.png">
 <title>インスタ埋め込みメーカー</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
@@ -179,6 +198,9 @@ $('copy').addEventListener('click', () => {
 });
 
 generate();
+</script>
+<script>
+if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));}
 </script>
 </body>
 </html>
