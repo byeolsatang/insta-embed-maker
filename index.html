@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="InstagramのリールやポストのURLから、スマホでも埋め込みコードを作ってコピーできるツール">
+<title>インスタ埋め込みメーカー</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: single column, input → options → output, thumb-friendly controls */
+:root{
+  --bg:#f6f4f5; --surface:#ffffff; --fg:#231c21; --muted:#6e6269; --line:#e4dde1;
+  --accent:#c2366e; --accent-fg:#ffffff; --accent-soft:#fbe8ef; --ok:#2f7d57; --err:#b3261e;
+  --code-bg:#1f1a1e; --code-fg:#f3e9ee;
+  --f-body:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#161214; --surface:#211b1e; --fg:#f2eaee; --muted:#a9999f; --line:#3a3035;
+  --accent:#ff6fa3; --accent-fg:#1b0f15; --accent-soft:#3a1f2b; --ok:#6fcf9c; --err:#ff8a80;
+  --code-bg:#0f0c0e; --code-fg:#f3e9ee; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#161214; --surface:#211b1e; --fg:#f2eaee; --muted:#a9999f; --line:#3a3035;
+  --accent:#ff6fa3; --accent-fg:#1b0f15; --accent-soft:#3a1f2b; --ok:#6fcf9c; --err:#ff8a80;
+  --code-bg:#0f0c0e; --code-fg:#f3e9ee; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.7}
+.wrap{max-width:620px;margin:0 auto;padding-inline:16px;padding-block:28px 48px;display:grid;gap:22px}
+header h1{font-size:1.5rem;margin:0;font-weight:700;letter-spacing:.02em;text-wrap:balance}
+header p{margin:4px 0 0;color:var(--muted);font-size:.9rem}
+section{display:grid;gap:10px}
+label.h{font-weight:700;font-size:.95rem}
+.hint{color:var(--muted);font-size:.82rem;margin:0}
+textarea,input[type=text]{width:100%;font:inherit;color:var(--fg);background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:12px 14px}
+textarea#urls{min-height:96px;font-family:var(--f-mono);font-size:.85rem;resize:vertical}
+textarea:focus,input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.row{display:flex;flex-wrap:wrap;gap:8px}
+button{font:inherit;font-weight:700;border-radius:999px;padding:11px 20px;border:1.5px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;min-height:44px}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.opts{display:grid;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px}
+.chk{display:flex;gap:10px;align-items:flex-start;font-size:.9rem}
+.chk input{margin-top:5px;accent-color:var(--accent);width:18px;height:18px;flex:none}
+.status{font-size:.85rem;display:grid;gap:4px}
+.status .ok{color:var(--ok)} .status .err{color:var(--err)}
+.out{position:relative}
+#code{width:100%;min-height:220px;background:var(--code-bg);color:var(--code-fg);border:none;border-radius:12px;font-family:var(--f-mono);font-size:.76rem;line-height:1.55;padding:14px}
+.toast{font-size:.85rem;color:var(--ok);min-height:1.2em;margin:0}
+.preview{display:grid;gap:10px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;gap:12px;align-items:center;min-width:0}
+.card .ig{width:40px;height:40px;border-radius:10px;flex:none;background:radial-gradient(circle at 30% 110%,#fdc468 0 25%,#df4996 55%,#8a3ab9 90%);display:grid;place-items:center}
+.card .ig span{width:18px;height:18px;border:2.5px solid #fff;border-radius:6px;display:block}
+.card .meta{min-width:0}
+.card .meta b{display:block;font-size:.9rem}
+.card .meta code{font-family:var(--f-mono);font-size:.75rem;color:var(--muted);word-break:break-all}
+.card a{margin-left:auto;color:var(--accent);font-weight:700;font-size:.85rem;white-space:nowrap;text-decoration:none}
+details{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:.88rem}
+details summary{font-weight:700;cursor:pointer}
+details ul{margin:8px 0 0;padding-left:1.2em;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>インスタ埋め込みメーカー</h1>
+    <p>投稿・リールのURLを貼るだけ。スマホから埋め込みコードを作ってコピーできます。</p>
+  </header>
+
+  <section>
+    <label class="h" for="urls">InstagramのURL</label>
+    <textarea id="urls" spellcheck="false" autocapitalize="off" placeholder="https://www.instagram.com/reel/…">https://www.instagram.com/reel/Dd4vFRozbEd/?stkn=MWR1djlqaXNvdnE2cA==</textarea>
+    <p class="hint">複数あるときは1行に1つずつ。共有リンクの <code>?igsh=</code> や <code>?stkn=</code> などは自動で取り除きます。</p>
+    <div class="row">
+      <button type="button" id="paste">クリア</button>
+      <button type="button" class="primary" id="gen">コードを作る</button>
+    </div>
+  </section>
+
+  <div class="opts">
+    <label class="chk"><input type="checkbox" id="caption"> キャプション（本文）も一緒に表示する</label>
+    <label class="chk"><input type="checkbox" id="script" checked> 読み込み用スクリプト（embed.js）を最後に1回だけ付ける<br><span class="hint">同じページに2つ目以降を貼るときは外してOK</span></label>
+  </div>
+
+  <div class="status" id="status" aria-live="polite"></div>
+
+  <section class="out">
+    <label class="h" for="code">埋め込みコード</label>
+    <textarea id="code" readonly spellcheck="false"></textarea>
+    <div class="row">
+      <button type="button" class="primary" id="copy">コピー</button>
+    </div>
+    <p class="toast" id="toast" aria-live="polite"></p>
+  </section>
+
+  <section class="preview" id="previewWrap">
+    <label class="h">変換したリンク</label>
+    <div id="preview" class="preview"></div>
+    <p class="hint">実際の埋め込み表示は、コードを貼ったブログやサイト側で確認してください。</p>
+  </section>
+
+  <details>
+    <summary>使い方のコツ</summary>
+    <ul>
+      <li>アメブロ・はてな・WordPressなどは「HTML編集」モードに切り替えて貼り付けます。</li>
+      <li>非公開アカウントの投稿は埋め込みできません。</li>
+      <li>対応URL：/p/（投稿）・/reel/・/reels/・/tv/。ユーザー名入りのURLもOK。</li>
+    </ul>
+  </details>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const RE = /(?:instagram\.com|instagr\.am)\/(?:[A-Za-z0-9_.]+\/)?(p|reel|reels|tv)\/([A-Za-z0-9_-]+)/i;
+
+function parse(line){
+  const m = line.match(RE);
+  if(!m) return null;
+  let type = m[1].toLowerCase();
+  if(type === 'reels') type = 'reel';
+  return {type, id:m[2], url:`https://www.instagram.com/${type}/${m[2]}/`};
+}
+
+function block(p, captioned){
+  const label = p.type === 'reel' ? 'Instagramでこのリールを見る' : 'Instagramでこの投稿を見る';
+  return `<blockquote class="instagram-media"${captioned ? ' data-instgrm-captioned' : ''} data-instgrm-permalink="${p.url}" data-instgrm-version="14" style="background:#FFF; border:0; border-radius:3px; box-shadow:0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15); margin:1px; max-width:540px; min-width:326px; padding:0; width:99.375%; width:-webkit-calc(100% - 2px); width:calc(100% - 2px);">
+  <div style="padding:16px;">
+    <a href="${p.url}" style="background:#FFFFFF; line-height:0; padding:0; text-align:center; text-decoration:none; width:100%;" target="_blank" rel="noopener">${label}</a>
+  </div>
+</blockquote>`;
+}
+
+function generate(){
+  const lines = $('urls').value.split(/\s+/).map(s => s.trim()).filter(Boolean);
+  const ok = [], bad = [], seen = new Set();
+  lines.forEach(l => {
+    const p = parse(l);
+    if(!p) { bad.push(l); return; }
+    if(seen.has(p.url)) return;
+    seen.add(p.url); ok.push(p);
+  });
+  let code = ok.map(p => block(p, $('caption').checked)).join('\n\n');
+  if(ok.length && $('script').checked) code += '\n<script async src="https://www.instagram.com/embed.js"><\/script>';
+  $('code').value = code;
+  $('toast').textContent = '';
+
+  const st = $('status'); st.innerHTML = '';
+  if(!lines.length){ st.innerHTML = '<span class="err">URLを入力してください。</span>'; }
+  if(ok.length){ const s = document.createElement('span'); s.className='ok'; s.textContent = `${ok.length}件のコードを作りました。`; st.append(s); }
+  bad.forEach(b => { const s = document.createElement('span'); s.className='err'; s.textContent = `読み取れませんでした：${b.slice(0,60)}（投稿・リールのURLか確認してください）`; st.append(s); });
+
+  const pv = $('preview'); pv.innerHTML = '';
+  $('previewWrap').hidden = !ok.length;
+  ok.forEach(p => {
+    const c = document.createElement('div'); c.className = 'card';
+    c.innerHTML = `<div class="ig"><span></span></div><div class="meta"><b>${p.type==='reel'?'リール':p.type==='tv'?'IGTV':'投稿'}</b><code></code></div><a target="_blank" rel="noopener">開く ↗</a>`;
+    c.querySelector('code').textContent = p.url;
+    c.querySelector('a').href = p.url;
+    pv.append(c);
+  });
+}
+
+$('gen').addEventListener('click', generate);
+$('caption').addEventListener('change', generate);
+$('script').addEventListener('change', generate);
+$('paste').addEventListener('click', () => { $('urls').value=''; $('urls').focus(); generate(); });
+$('urls').addEventListener('paste', () => setTimeout(generate, 0));
+
+$('copy').addEventListener('click', () => {
+  const t = $('code');
+  if(!t.value){ $('toast').textContent = '先にコードを作ってください。'; return; }
+  const fallback = () => { t.focus(); t.select(); t.setSelectionRange(0, t.value.length); $('toast').textContent = '選択しました。長押しして「コピー」を選んでください。'; };
+  try{
+    navigator.clipboard.writeText(t.value).then(() => { $('toast').textContent = 'コピーしました。'; }, fallback);
+  }catch(e){ fallback(); }
+});
+
+generate();
+</script>
+</body>
+</html>

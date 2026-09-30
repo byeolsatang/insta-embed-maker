@@ -1,2 +1,19 @@
-# insta-embed-maker
-Instagram embed generator for creating embeddable social media previews and shareable content cards.
+# インスタ埋め込みメーカー
+
+Instagramの投稿・リールのURLを貼るだけで、ブログやサイト用の埋め込みコードを作れるツールです。スマホからでも使えます。
+
+## 使い方
+
+1. `index.html` をブラウザで開く（GitHub Pagesで公開すればURLからアクセス可能）
+2. InstagramのURLを貼り付けて「コードを作る」
+3. 「コピー」して、ブログのHTML編集画面に貼り付け
+
+## 機能
+
+- `?igsh=` `?stkn=` などの共有パラメータを自動で除去
+- 投稿（/p/）・リール（/reel/, /reels/）・IGTV（/tv/）、ユーザー名入りURLに対応
+- 1行に1つずつ書けば複数まとめて変換（embed.jsは最後に1回だけ付与）
+- キャプション表示のオン／オフ
+- ライト／ダークモード対応
+
+HTML1ファイルだけで動き、サーバーは不要です。
